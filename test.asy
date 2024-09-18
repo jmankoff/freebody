@@ -23,8 +23,8 @@ drawSphere(body1, surfaceColor=red, name="body1");
 drawCube(body2, surfaceColor=green, name="body2");
 
 // Use the function to draw a vector between two bodies
-drawForceVector(body1, blue, Arrow3(size=2), body2);
+drawForceVector(body1, blue, Arrow3(size=2), body2, "bodyVec");
 
 // Use the function to draw a free vector from a body with a given direction and length
-drawForceVector(body1, red, Arrow3(size=2), null, (1, 1, 1), len);  // Vector in the (1, 1, 1) direction, length len
+drawForceVector(body1, red, Arrow3(size=2), null, (1, 1, 1), len, "normalVec");  // Vector in the (1, 1, 1) direction, length len
 

@@ -25,25 +25,25 @@ void drawCoordinates() {
 }
 
 // Function to draw a sphere at a specified body location
-void drawSphere(Body body, pen surfaceColor=currentpen, string name, pair labelPos=NW, triple labelOffset=(0,0,0)) {
+void drawSphere(Body body, pen surfaceColor=currentpen, string name, pair namePos=NW, triple nameOffset=(0,0,0)) {
   draw(shift(body.position)*scale3(body.radius)*unitsphere, surfacepen=surfaceColor);
-  if (labelOffset==(0,0,0)) {
-    labelOffset=(body.radius, body.radius, body.radius)+body.position;
+  if (nameOffset==(0,0,0)) {
+    nameOffset=(body.radius, body.radius, body.radius)+body.position;
   }
-  label(name,labelOffset,labelPos);
+  label(name, nameOffset, namePos);
 }
 
 // Function to draw a cube at a specified body location
-void drawCube(Body body, pen surfaceColor=currentpen, string name, pair labelPos=NW, triple labelOffset=(0,0,0)) {
+void drawCube(Body body, pen surfaceColor=currentpen, string name, pair namePos=NW, triple nameOffset=(0,0,0)) {
   draw(shift(body.position)*scale3(2*body.radius)*unitcube, surfacepen=surfaceColor);
-  if (labelOffset==(0,0,0)) {
-    labelOffset=(body.radius, body.radius, body.radius)+body.position;
+  if (nameOffset==(0,0,0)) {
+    nameOffset=(body.radius, body.radius, body.radius)+body.position;
   }
-  label(name,labelOffset,labelPos);
+  label(name,nameOffset,namePos);
 }
 
 // Function to draw a vector between two bodies, or a vector with a specified length and direction
-void drawForceVector(Body body1, pen p=currentpen, arrowbar3 arrowType=Arrow3(), Body body2=null, triple direction=(0,0,0), real length=0) {
+void drawForceVector(Body body1, pen p=currentpen, arrowbar3 arrowType=Arrow3(), Body body2=null, triple direction=(0,0,0), real length=0, string name, pair namePos=N, triple nameOffset=(0,0,0)) {
     triple startVector, endVector;
 
     if (body2 != null) {
@@ -71,4 +71,8 @@ void drawForceVector(Body body1, pen p=currentpen, arrowbar3 arrowType=Arrow3(),
 
     // Draw the vector with an arrowhead in 3D
     draw(startVector -- endVector, p=p, arrow=arrowType);
+    triple midpoint = (startVector + endVector)/2;
+    nameOffset = midpoint+nameOffset;
+    label(name,nameOffset,namePos);
+
 }
