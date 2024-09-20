@@ -1,7 +1,8 @@
 import three;
+import graph;
 
 // Define a structure for a body (sphere)
-struct Body {
+struct Body3d {
   triple position;  // Center of the sphere
   real radius;  // Radius of the sphere
 
@@ -14,18 +15,59 @@ struct Body {
   //void addForce(name, magnitude
 }
 
-void drawCoordinates() {
-  // Draw coordinate axes
-  draw(O--(2,0,0), arrow=Arrow3(size=2), L=Label("$x$", 1), blue);
-  draw(O--(0,2,0), arrow=Arrow3(size=2), L=Label("$y$", 1), red);
-  draw(O--(0,0,2), arrow=Arrow3(size=2), L=Label("$z$", 1), black);
-  // Set the viewing angle
-  currentprojection = perspective(3, 2, 1);
+// Define a structure for a body (sphere)
+struct Body2d {
+  pair position;  // Center of the circle
+  real radius;  // Radius of the circle / size of the square
 
+
+  void operator init(pair position, real r) {
+    this.position=position;
+    radius=r;
+  }
+
+  //void addForce(name, magnitude
+}
+
+void drawCoordinates2d() {
+  // Draw coordinate axes
+  xaxis("$x$");
+  yaxis("$y$");
+}
+
+void drawCoordinates3d(int scale) {
+  // Draw coordinate axes
+  draw(O--(scale,0,0), arrow=Arrow3(size=2), L=Label("$x$", 1), blue);
+  draw(O--(0,scale,0), arrow=Arrow3(size=2), L=Label("$y$", 1), red);
+  draw(O--(0,0,scale), arrow=Arrow3(size=2), L=Label("$z$", 1), black);
 }
 
 // Function to draw a sphere at a specified body location
-void drawSphere(Body body, pen surfaceColor=currentpen, string name, pair namePos=NW, triple nameOffset=(0,0,0)) {
+void drawCircle(Body2d body, pen surfaceColor=currentpen, string name, pair nameOffset=(0,0)) {
+  draw(circle(body.position, body.radius), surfaceColor);
+  if (nameOffset==(0,0)) {
+    nameOffset=(body.radius, body.radius)+body.position;
+  }
+  label(name, nameOffset);
+}
+
+// Function to draw a sphere at a specified body location
+void drawSquare(Body2d body, pen surfaceColor=currentpen, string name, pair nameOffset=(0,0)) {
+  pair bottomLeft = body.position;
+  pair bottomRight = body.position + (body.radius, 0);
+  pair topLeft = body.position + (0, body.radius);
+  pair topRight = body.position + (body.radius, body.radius);
+
+  // Draw the rectangle by connecting the corners
+  draw(bottomLeft -- bottomRight -- topRight -- topLeft -- cycle, currentpen);
+  if (nameOffset==(0,0)) {
+    nameOffset=(body.radius, body.radius)+body.position;
+  }
+  label(name, nameOffset);
+}
+
+// Function to draw a sphere at a specified body location
+void drawSphere(Body3d body, pen surfaceColor=currentpen, string name, pair namePos=NW, triple nameOffset=(0,0,0)) {
   draw(shift(body.position)*scale3(body.radius)*unitsphere, surfacepen=surfaceColor);
   if (nameOffset==(0,0,0)) {
     nameOffset=(body.radius, body.radius, body.radius)+body.position;
@@ -33,8 +75,49 @@ void drawSphere(Body body, pen surfaceColor=currentpen, string name, pair namePo
   label(name, nameOffset, namePos);
 }
 
+  // Function to draw a sphere at a specified body location
+Body3d drawPointLoc(Body3d origin, triple loc, string name, pen pointColor=blue, real magnitude=0) {
+  Body3d body = Body3d(loc, .05);
+  drawSphere(body, surfaceColor=pointColor, name);
+
+  // Define a vector from the origin to (1, 1, 1)
+  triple vector = loc;
+
+  // Draw the vector with a dotted line
+  draw(origin.position--vector, dotted+pointColor+1bp);
+
+  // Draw the vector with a dotted line
+  draw(origin.position--vector/2, pointColor+1bp, Arrow3(size=5bp));
+
+  if (magnitude != 0) {
+      // Calculate the direction of the force vector
+      triple forceDirection = body.position - origin.position;
+      forceDirection /= length(forceDirection);  // Normalize the direction
+      label(string(magnitude),vector/2);
+  }
+
+  return body;
+}
+
+// Function to draw a sphere at a specified body location. Theta and pi are in degrees
+Body3d drawPointAngle(Body3d origin, real theta, real phi, string name, pen pointColor=blue, real magnitude) {
+
+  // Convert angles from degrees to radians since trigonometric functions use radians
+  real thetaRad = theta * pi / 180;
+  real phiRad = phi * pi / 180;
+
+  // Calculate Cartesian coordinates
+  real x = magnitude * sin(thetaRad) * cos(phiRad);
+  real y = magnitude * sin(thetaRad) * sin(phiRad);
+  real z = magnitude * cos(thetaRad);
+
+  triple loc = (x, y, z)*magnitude;
+  
+  return drawPointLoc(origin, loc, name, pointColor, magnitude);
+}
+
 // Function to draw a cube at a specified body location
-void drawCube(Body body, pen surfaceColor=currentpen, string name, pair namePos=NW, triple nameOffset=(0,0,0)) {
+void drawCube(Body3d body, pen surfaceColor=currentpen, string name, pair namePos=NW, triple nameOffset=(0,0,0)) {
   draw(shift(body.position)*scale3(2*body.radius)*unitcube, surfacepen=surfaceColor);
   if (nameOffset==(0,0,0)) {
     nameOffset=(body.radius, body.radius, body.radius)+body.position;
@@ -43,7 +126,7 @@ void drawCube(Body body, pen surfaceColor=currentpen, string name, pair namePos=
 }
 
 // Function to draw a vector between two bodies, or a vector with a specified length and direction
-void drawForceVector(Body body1, pen p=currentpen, arrowbar3 arrowType=Arrow3(), Body body2=null, triple direction=(0,0,0), real length=0, string name, pair namePos=N, triple nameOffset=(0,0,0)) {
+void drawForceVector3d(Body3d body1, pen p=currentpen, arrowbar3 arrowType=Arrow3(), Body3d body2=null, triple direction=(0,0,0), real length=0, string name, pair namePos=N, triple nameOffset=(0,0,0)) {
     triple startVector, endVector;
 
     if (body2 != null) {
@@ -51,16 +134,10 @@ void drawForceVector(Body body1, pen p=currentpen, arrowbar3 arrowType=Arrow3(),
       // Calculate the direction of the force vector
       triple forceDirection = body2.position - body1.position;
       forceDirection /= length(forceDirection);  // Normalize the direction
-      //write("ForceDirection");
-      //write(forceDirection);
 
       // Calculate the start and end points for the vector (just outside the spheres)
       startVector = body1.position + body1.radius * forceDirection;
-      //write("StartVector");
-      //write(startVector);
       endVector = body2.position - body2.radius * forceDirection;
-      //write("EndVector");
-      //write(endVector);
 
     } else {
         // Case 2: Vector with specified direction and length (not ending at another body)
@@ -75,4 +152,29 @@ void drawForceVector(Body body1, pen p=currentpen, arrowbar3 arrowType=Arrow3(),
     nameOffset = midpoint+nameOffset;
     label(name,nameOffset,namePos);
 
+}
+
+Body3d setupForFreebody(int scale, string bodyname) {
+
+  // Draw the xz-plane (y = 0)
+  surface xz_plane = surface((scale,0,scale)--(scale,0,0)--(0,0,0)--(0,0,scale)--cycle);
+  draw(xz_plane, lightblue+opacity(0.5)); // Light gray and partially transparent
+
+  // Draw the yz-plane (x = 0)
+  surface yz_plane = surface((0,scale,scale)--(0,scale,0)--(0,0,0)--(0,0,scale)--cycle);
+  draw(yz_plane, lightred+opacity(0.5)); // Light blue and partially transparent
+
+  // Draw the xy-plane (z = 0)
+  surface xy_plane = surface((scale,scale,0)--(scale,0,0)--(0,0,0)--(0,scale,0)--cycle);
+  draw(xy_plane, lightgrey+opacity(0.5)); // Light green and partially transparent
+
+  drawCoordinates3d(scale);
+  
+  Body3d origin = Body3d((0,0,0), .1*scale);
+  drawSphere(origin, name=bodyname, surfaceColor=lightgreen);
+  // Set the viewing angle
+  currentprojection = perspective(3, 2, 1);
+  // set the pen width
+  pen thickp=linewidth(0.5mm);
+  return origin;
 }
