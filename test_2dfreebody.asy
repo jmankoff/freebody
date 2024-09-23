@@ -2,7 +2,7 @@ import three;
 import math;
 import freebody;
 size(200);
-Body2d origin = setupFor2Freebody(3, "A");
+Body2d origin = setupFor2Freebody(2, "A");
 
 // Define the bodies 
 Body2d FN = draw2PointLoc(origin, (0, 1), "FN");
