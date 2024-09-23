@@ -4,6 +4,7 @@ Freebody is a library that works with asmyptote
 
 It is designed to radically simplify the process of creating freebody diagrams according to the rules that are typically required in a physics class such as statics
 
+## Usage
 To run it, you need to have freebody.asy in your path and import it (see test_freebody.asy as an example)
 
 A freebody diagram script begins with imports
@@ -22,8 +23,13 @@ size(200);
 
 Other details depend on whether the body is in 2d or 3d
 
+## Assumptions
+
+Freebody currently supports the creation of freebody diagrams that are designed to show forces between an origin object and points around the origin. It has some built in assumptions that will need to be expanded upon, specificalyl that vectors always go from the source object to the new point (not the other direction)
+
+These are loose assumptions in the sense that there are a bunch of helper functions that do not make these assumptions that could be used directly.
+
 ## 3d Freebody Support
-### Basic Usage
 A freebody diagram script begins with imports
 
 ```asymptote
@@ -55,17 +61,8 @@ Alternatively, the user can specify an angle and magnitude
 ```asymptote
 Body3d point3 = draw3PointAngle(origin, 45,0, "point3", magnitude=2);
 ```
-### Assumptions
-
-Freebody currently supports the creation of freebody diagrams that are designed to show forces between an origin object and points around the origin. It has some built in assumptions that will need to be expanded upon
-
-1. That the origin object is at (0,0,0)
-2. That vectors always go from the source object to the new point (not the other direction)
-
-These are loose assumptions in the sense that there are a bunch of helper functions that do not make these assumptions that could be used directly.
 
 ## 2d Freebody Support
-### Basic Usage
 The user first decides on the scale of the axis and the name of the origin object
 
 ```asmyptote
@@ -81,11 +78,3 @@ Body2d F = draw2PointLoc(origin, (-1,-.5), "F", vectorName="beta");
 drawing based on an angle is also possible in 2d.
 
 
-### Assumptions
-
-As with 3D drawings, 2d drawings have assumptions
-
-1. That the origin object is at (0,0)
-2. That vectors always go from the source object to the new point (not the other direction)
-
-These are loose assumptions in the sense that there are a bunch of helper functions that do not make these assumptions that could be used directly.

@@ -89,13 +89,18 @@ Body3d draw3PointLoc(Body3d origin, triple loc, string name, pen pointColor=blue
   // Draw the vector with a dotted line
   draw(origin.position--vector, dotted+pointColor+1bp);
 
+  // Calculate the direction of the force vector
+  triple forceDirection = origin.position + 0.66*(body.position - origin.position);
+
   // Draw the vector with a dotted line
-  draw(origin.position--vector/2, pointColor+1bp, Arrow3(size=5bp));
+  draw(origin.position--forceDirection, pointColor+1bp, Arrow3(size=5bp));
+
+  triple labelPosition = origin.position + 0.5*(body.position - origin.position);
 
   if (magnitude != 0 && vectorName == "") {
-    label(string(magnitude), vector/2);
+    label(string(magnitude), labelPosition);
   } else {
-    label(vectorName, vector/2);
+    label(vectorName, labelPosition);
   }
 
   return body;
@@ -198,19 +203,19 @@ void drawForceVector3d(Body3d body1, pen p=currentpen, arrowbar3 arrowType=Arrow
 
 }
 
-Body2d setupFor2Freebody(int scale, string bodyname) {
+Body2d setupFor2Freebody(int scale, pair loc=(0,0), string bodyname) {
 
   drawCoordinates2d(scale);
   
   pen thickp=linewidth(0.5mm);
-  Body2d origin = Body2d((0,0), .01*scale);
+  Body2d origin = Body2d(loc, .01*scale);
   drawCircle(origin, name=bodyname, surfaceColor=blue, fillColor=blue);
 
   return origin;
 }
 
 
-Body3d setupFor3Freebody(int scale, string bodyname) {
+Body3d setupFor3Freebody(int scale, triple loc=(0,0,0), string bodyname) {
 
   // Draw the xz-plane (y = 0)
   surface xz_plane = surface((scale,0,scale)--(scale,0,0)--(0,0,0)--(0,0,scale)--cycle);
@@ -226,7 +231,7 @@ Body3d setupFor3Freebody(int scale, string bodyname) {
 
   drawCoordinates3d(scale);
   
-  Body3d origin = Body3d((0,0,0), .1*scale);
+  Body3d origin = Body3d(loc, .1*scale);
   drawSphere(origin, name=bodyname, surfaceColor=lightgreen);
   // Set the viewing angle
   currentprojection = perspective(3, 2, 1);
