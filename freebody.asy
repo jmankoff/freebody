@@ -20,7 +20,6 @@ struct Body2d {
   pair position;  // Center of the circle
   real radius;  // Radius of the circle / size of the square
 
-
   void operator init(pair position, real r) {
     this.position=position;
     radius=r;
@@ -29,10 +28,10 @@ struct Body2d {
   //void addForce(name, magnitude
 }
 
-void drawCoordinates2d() {
+void drawCoordinates2d(int scale) {
   // Draw coordinate axes
-  xaxis("$x$");
-  yaxis("$y$");
+  xaxis("$x$", -scale, scale);
+  yaxis("$y$", -scale, scale);
 }
 
 void drawCoordinates3d(int scale) {
@@ -43,8 +42,12 @@ void drawCoordinates3d(int scale) {
 }
 
 // Function to draw a sphere at a specified body location
-void drawCircle(Body2d body, pen surfaceColor=currentpen, string name, pair nameOffset=(0,0)) {
-  draw(circle(body.position, body.radius), surfaceColor);
+void drawCircle(Body2d body, pen surfaceColor=currentpen, string name, pair nameOffset=(0,0), pen fillColor=white) {
+  if (fillColor != white) {
+    fill(circle(body.position, body.radius), fillColor);
+  } else {
+    draw(circle(body.position, body.radius), surfaceColor);
+  }
   if (nameOffset==(0,0)) {
     nameOffset=(body.radius, body.radius)+body.position;
   }
@@ -76,7 +79,7 @@ void drawSphere(Body3d body, pen surfaceColor=currentpen, string name, pair name
 }
 
   // Function to draw a sphere at a specified body location
-Body3d drawPointLoc(Body3d origin, triple loc, string name, pen pointColor=blue, real magnitude=0) {
+Body3d draw3PointLoc(Body3d origin, triple loc, string name, pen pointColor=blue, real magnitude=0, string vectorName="") {
   Body3d body = Body3d(loc, .05);
   drawSphere(body, surfaceColor=pointColor, name);
 
@@ -89,18 +92,41 @@ Body3d drawPointLoc(Body3d origin, triple loc, string name, pen pointColor=blue,
   // Draw the vector with a dotted line
   draw(origin.position--vector/2, pointColor+1bp, Arrow3(size=5bp));
 
-  if (magnitude != 0) {
-      // Calculate the direction of the force vector
-      triple forceDirection = body.position - origin.position;
-      forceDirection /= length(forceDirection);  // Normalize the direction
-      label(string(magnitude),vector/2);
+  if (magnitude != 0 && vectorName == "") {
+    label(string(magnitude), vector/2);
+  } else {
+    label(vectorName, vector/2);
+  }
+
+  return body;
+}
+
+
+  // Function to draw a sphere at a specified body location
+Body2d draw2PointLoc(Body2d origin, pair loc, string name, pen pointColor=blue, real magnitude=0, string vectorName="") {
+  Body2d body = Body2d(loc, .05);
+  drawCircle(body, surfaceColor=pointColor, name);
+
+  // Define a vector from the origin to loc
+  pair vector = loc;
+
+  // Draw the vector with a dotted line
+  draw(origin.position--vector, dotted+pointColor+1bp);
+
+  // Draw the vector with a dotted line
+  draw(origin.position--vector/2, pointColor+1bp, Arrow(size=5bp));
+
+  if (vectorName=="" && magnitude != 0) {
+    label(string(magnitude),vector/2);
+  } else {
+    label(vectorName, vector/2);
   }
 
   return body;
 }
 
 // Function to draw a sphere at a specified body location. Theta and pi are in degrees
-Body3d drawPointAngle(Body3d origin, real theta, real phi, string name, pen pointColor=blue, real magnitude) {
+Body3d draw3PointAngle(Body3d origin, real theta, real phi, string name, pen pointColor=blue, real magnitude, string vectorName="") {
 
   // Convert angles from degrees to radians since trigonometric functions use radians
   real thetaRad = theta * pi / 180;
@@ -113,8 +139,27 @@ Body3d drawPointAngle(Body3d origin, real theta, real phi, string name, pen poin
 
   triple loc = (x, y, z)*magnitude;
   
-  return drawPointLoc(origin, loc, name, pointColor, magnitude);
+  return draw3PointLoc(origin, loc, name, pointColor, magnitude, vectorName);
 }
+
+
+// Function to draw a sphere at a specified body location. Theta and pi are in degrees
+Body2d draw2PointAngle(Body2d origin, real theta, real phi, string name, pen pointColor=blue, real magnitude, string vectorName="") {
+
+  // Convert angles from degrees to radians since trigonometric functions use radians
+  real thetaRad = theta * pi / 180;
+  real phiRad = phi * pi / 180;
+
+  // Calculate Cartesian coordinates
+  real x = magnitude * sin(thetaRad) * cos(phiRad);
+  real y = magnitude * sin(thetaRad) * sin(phiRad);
+  real z = magnitude * cos(thetaRad);
+
+  pair loc = (x, y)*magnitude;
+  
+  return draw2PointLoc(origin, loc, name, pointColor, magnitude, vectorName);
+}
+
 
 // Function to draw a cube at a specified body location
 void drawCube(Body3d body, pen surfaceColor=currentpen, string name, pair namePos=NW, triple nameOffset=(0,0,0)) {
@@ -150,11 +195,22 @@ void drawForceVector3d(Body3d body1, pen p=currentpen, arrowbar3 arrowType=Arrow
     draw(startVector -- endVector, p=p, arrow=arrowType);
     triple midpoint = (startVector + endVector)/2;
     nameOffset = midpoint+nameOffset;
-    label(name,nameOffset,namePos);
 
 }
 
-Body3d setupForFreebody(int scale, string bodyname) {
+Body2d setupFor2Freebody(int scale, string bodyname) {
+
+  drawCoordinates2d(scale);
+  
+  pen thickp=linewidth(0.5mm);
+  Body2d origin = Body2d((0,0), .01*scale);
+  drawCircle(origin, name=bodyname, surfaceColor=blue, fillColor=blue);
+
+  return origin;
+}
+
+
+Body3d setupFor3Freebody(int scale, string bodyname) {
 
   // Draw the xz-plane (y = 0)
   surface xz_plane = surface((scale,0,scale)--(scale,0,0)--(0,0,0)--(0,0,scale)--cycle);
